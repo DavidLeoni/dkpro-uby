@@ -20,7 +20,11 @@ package de.tudarmstadt.ukp.lmf.transform.wordnet;
 
 import java.io.File;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
+import java.util.Objects;
+
 
 import net.sf.extjwnl.JWNLException;
 import net.sf.extjwnl.dictionary.Dictionary;
@@ -29,9 +33,18 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import de.tudarmstadt.ukp.lmf.model.core.GlobalInformation;
+import de.tudarmstadt.ukp.lmf.model.core.LexicalEntry;
 import de.tudarmstadt.ukp.lmf.model.core.LexicalResource;
 import de.tudarmstadt.ukp.lmf.model.core.Lexicon;
+import de.tudarmstadt.ukp.lmf.model.core.Sense;
 import de.tudarmstadt.ukp.lmf.model.enums.ELanguageIdentifier;
+import de.tudarmstadt.ukp.lmf.model.semantics.SemanticArgument;
+import de.tudarmstadt.ukp.lmf.model.semantics.SenseExample;
+import de.tudarmstadt.ukp.lmf.model.semantics.SynSemCorrespondence;
+import de.tudarmstadt.ukp.lmf.model.semantics.Synset;
+import de.tudarmstadt.ukp.lmf.model.syntax.SubcategorizationFrame;
+import de.tudarmstadt.ukp.lmf.model.syntax.SyntacticArgument;
+import de.tudarmstadt.ukp.lmf.transform.wordnet.util.WNConvUtil;
 
 
 /**
@@ -45,15 +58,22 @@ import de.tudarmstadt.ukp.lmf.model.enums.ELanguageIdentifier;
  */
 public class WNConverter {
 
+
+    /**
+     * div new
+     */
+    private String prefix;
+    
+    
 	private final Dictionary extWordnet; // extWordNet Dictionary
-	protected File dictionaryPath;
+	protected File dictionaryPath;	
 
 	private final LexicalResource lexicalResource;
 
 	private InputStream subcatStream; // subcat mapping file
 
 	private final String dtd_version;
-	private final String resourceVersion;
+	private final String resourceVersion;	
 
 	private final Log LOG = LogFactory.getLog(getClass());
 
@@ -63,31 +83,36 @@ public class WNConverter {
 	 * @param dictionaryPath the path of the WordNet dictionary files
 	 * @param wordNet initialized WordNet's {@link Dictionary} object
 	 * @param lexicalResource initialized object of  {@link LexicalResource}, which will be filled with WordNet's data
-	 * @param resourceVersion Version of this resource
+	 * @param resourceVersion Version of this resource in dot separated numbers like '3.0'
 	 * @param dtd_version specifies the version of the .dtd which will be written to lexicalResource
 	 * @param exMappingPath path of the file containing manually entered mappings of lexemes and example sentences
+	 * @param prefix every id value will have this prefix
 	 */
-	public WNConverter(final File dictionaryPath, final Dictionary wordNet,
+	public WNConverter( String prefix, final File dictionaryPath, final Dictionary wordNet,
 			final LexicalResource lexicalResource, final String resourceVersion,
 			final String dtd) {
+
+	    this.prefix = prefix;	    
+
 		this.dictionaryPath = dictionaryPath;
 		this.extWordnet = wordNet;
 		this.lexicalResource = lexicalResource;
 		this.resourceVersion = resourceVersion;
 		this.dtd_version = dtd;
 		try {
-			this.subcatStream = getClass().getClassLoader().getResource("WordNetSubcatMappings/wnFrameMapping.txt").openStream();
+			this.subcatStream = getClass().getClassLoader().getResource("WordNetSubcatMappings/wnFrameMapping.txt").openStream();			
 		} catch (Exception e) {
 			LOG.error("Unable to load subcat mapping file. Aborting all operations");
 			System.exit(1);
 		}
 	}
+	
 
 	/** @deprecated Use alternative constructor instead! */
 	@Deprecated
 	public WNConverter(File dictionaryPath, Dictionary wordNet, LexicalResource lexicalResource, String resourceVersion,
 			String dtd, String exMappingPath) {
-		this(dictionaryPath, wordNet, lexicalResource, resourceVersion, dtd);
+		this(WNConvUtil.DEFAULT_PREFIX,dictionaryPath, wordNet, lexicalResource, resourceVersion, dtd);
 		/*try {
 			File exMapping = new File(exMappingPath);
 		} catch (Exception e) {
@@ -104,7 +129,7 @@ public class WNConverter {
 	public void toLMF() {
 		try {
 			LOG.info("Started converting WordNet to LMF...");
-			SubcategorizationFrameExtractor subcategorizationFrameExtractor = new SubcategorizationFrameExtractor(subcatStream);
+			SubcategorizationFrameExtractor subcategorizationFrameExtractor = new SubcategorizationFrameExtractor(subcatStream, prefix);
 
 			// Setting attributes of LexicalResource
 			lexicalResource.setName("WordNet");
@@ -112,13 +137,14 @@ public class WNConverter {
 
 			// *** Setting GlobalInformation *** //
 			GlobalInformation globalInformation = new GlobalInformation();
-			globalInformation.setLabel("LMF representation of WordNet 3.0");
+			globalInformation.setLabel("LMF representation of WordNet " + resourceVersion);
 			lexicalResource.setGlobalInformation(globalInformation);
 
 			//*** Setting Lexicon (only one since WordNet is monolingual)***//
 			Lexicon lexicon = new Lexicon();
 			lexicon.setLanguageIdentifier(ELanguageIdentifier.ENGLISH);
-			lexicon.setId("WN_Lexicon_0");
+			lexicon.setId(WNConvUtil.makeId(prefix, Lexicon.class,"en"));
+			
 			lexicon.setName("WordNet");
 			LinkedList<Lexicon> lexicons = new LinkedList<Lexicon>();
 			lexicons.add(lexicon);
@@ -126,7 +152,7 @@ public class WNConverter {
 
 			// *** Creating Synsets *** //
 			LOG.info("Generating Synsets...");
-			SynsetGenerator synsetGenerator = new SynsetGenerator(extWordnet, resourceVersion);
+			SynsetGenerator synsetGenerator = new SynsetGenerator(extWordnet, resourceVersion, prefix);			
 			synsetGenerator.initialize();
 			// Setting Synsets
 			lexicon.setSynsets(synsetGenerator.getSynsets());
@@ -135,13 +161,13 @@ public class WNConverter {
 			// *** Creating LexicalEntries *** //
 			LOG.info("Generating LexicalEntries...");
 			LexicalEntryGenerator lexicalEntryGenerator = new LexicalEntryGenerator(dictionaryPath, extWordnet,
-					synsetGenerator, subcategorizationFrameExtractor, resourceVersion);
+					synsetGenerator, subcategorizationFrameExtractor, resourceVersion, prefix);
 			lexicon.setLexicalEntries(lexicalEntryGenerator.getLexicalEntries());
 			LOG.info("Generating LexicalEntries done");
 
 			// *** Creating SynsetRelations *** //
 			LOG.info("Generating SynsetRelations...");
-			SynsetRelationGenerator synsetRelationGenerator = new SynsetRelationGenerator(synsetGenerator, lexicalEntryGenerator);
+			SynsetRelationGenerator synsetRelationGenerator = new SynsetRelationGenerator(synsetGenerator, lexicalEntryGenerator);			
 			// Update the relatios of previously extracted (and generated) Synsets
 			synsetRelationGenerator.updateSynsetRelations();
 			LOG.info("Generating SynsetRelations done");
@@ -169,12 +195,14 @@ public class WNConverter {
 		}
 	}
 
-	/**
+
+
+    /**
 	 * Returns the {@link LexicalResource} object, which contains the results of the conversion
 	 * @return an instance of LexicalResource, which contains the results of the conversion
 	 */
 	public LexicalResource getLexicalResource() {
 		return this.lexicalResource;
 	}
-
+        
 }

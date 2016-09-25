@@ -135,13 +135,17 @@ public class SenseGenerator {
 
 
 			// *** Generating Monolingual ExternalRef**//
+			
+			// div commented, external ref is redundant if we use Wordnet ids
+			/*
 			MonolingualExternalRef mer = new MonolingualExternalRef();
 			mer.setExternalReference(Integer.toString(lu.getId()));
 			mer.setExternalSystem(resourceVersion + "_" + LEXICAL_UNIT);
 			LinkedList<MonolingualExternalRef> mers = new LinkedList<MonolingualExternalRef>();
 			mers.add(mer);
 			sense.setMonolingualExternalRefs(mers);
-
+			 */
+			
 			// Adding this sense to the group of generated sense for the consumed luGroup
 			senses.add(sense);
 

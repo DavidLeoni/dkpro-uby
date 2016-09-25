@@ -21,6 +21,7 @@ package de.tudarmstadt.ukp.lmf.transform.wordnet;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -80,8 +81,8 @@ public class LexicalEntryGenerator {
 	 */
 	private final List<LexicalEntry> lexicalEntries = new LinkedList<LexicalEntry>();
 
-	private int lexicalEntryNumber; // used for creating IDs of LexicalEntries
-
+	private int lexicalEntryNumber; // used for creating IDs of LexicalEntries	
+	
 	private int syntacticBehaviourNumber; // used for creating syntacticBehaviour IDs
 
 	private boolean initialized = false; // true only when lexicalEntryGenerator is initialized
@@ -100,6 +101,13 @@ public class LexicalEntryGenerator {
 	private final Log logger = LogFactory.getLog(getClass());
 
 	/**
+	 * div new
+	 */
+    private String prefix;
+    
+    private Set<String> usedIds = new HashSet<>();
+
+	/**
 	 * Constructs a {@link LexicalEntryGenerator} used for generating LexicalEntries
 	 * @param dictionaryPath the path of the WordNet dictionary files
 	 * @param extWordnet an instance of initialized WordNet-{@link Dictionary} used for accessing WordNet's information
@@ -109,7 +117,11 @@ public class LexicalEntryGenerator {
 	 * @see {@link LexicalEntry}
 	 */
 	public LexicalEntryGenerator(File dictionaryPath, Dictionary extWordnet, SynsetGenerator synsetGenerator,
-			SubcategorizationFrameExtractor subcategorizationFrameExtractor, String resourceVersion){
+			SubcategorizationFrameExtractor subcategorizationFrameExtractor, String resourceVersion, 
+			String prefix){
+	    
+	    this.prefix = prefix;
+	    
 		this.subcategorizationFrameExtractor = subcategorizationFrameExtractor;
 		lexemeToGroupMappings = new TreeMap<Word, Set<Word>>(new Comparator<Word>() {
 			@Override
@@ -211,8 +223,7 @@ public class LexicalEntryGenerator {
 		// Create a new LexicalEntry for the consumed group
 		LexicalEntry lexicalEntry = new LexicalEntry();
 
-		// Create ID for this lexicalEntry
-		lexicalEntry.setId(createID());
+		
 
 		// codes of subcat frames
 		List<Map<String, Word>> subcatCodes = new LinkedList<Map<String, Word>>();
@@ -220,11 +231,13 @@ public class LexicalEntryGenerator {
 		boolean posSet = false; // True when POS is set to the LexicalEntry
 
 		String lemmaString = null; // Lemmas Written form
-
+		POS pos = null;
+		
 		for(Word lexeme : lexemeGroup){
 			if(!posSet){
 				// Extract the POS of the first Lexeme in the group
-				lexicalEntry.setPartOfSpeech(WNConvUtil.getPOS(lexeme.getPOS()));
+			    pos = lexeme.getPOS();
+				lexicalEntry.setPartOfSpeech(WNConvUtil.getPOS(pos));
 				posSet = true;
 
 				// Extract lemma
@@ -252,6 +265,9 @@ public class LexicalEntryGenerator {
 			}
 		}
 
+		// Create ID for this lexicalEntry
+        lexicalEntry.setId(createID(pos, lemmaString));		
+		
 		//*** Creating Lemma ***//
 		Lemma lemma = new Lemma();
 		List<FormRepresentation> formRepresentations = new LinkedList<FormRepresentation>();
@@ -308,9 +324,8 @@ public class LexicalEntryGenerator {
                 else {
 					// set the id of the new SyntacticBehaviour
 					// and make a record
-					StringBuffer sb = new StringBuffer(64);
-					sb.append("WN_SyntacticBehaviour_").append(syntacticBehaviourNumber++);
-					syntacticBehaviour.setId(sb.toString());
+					syntacticBehaviour.setId(
+					        WNConvUtil.makeId(prefix, SyntacticBehaviour.class, Integer.toString(syntacticBehaviourNumber++)));
 					syntBeh.put(synBehString, syntacticBehaviour);
 					syntacticBehaviours.add(syntacticBehaviour);
 				}
@@ -335,14 +350,34 @@ public class LexicalEntryGenerator {
 	}
 
 	/**
-	 * This method creates an ID for a {@link LexicalEntry}. <br>
-	 * The running number used for the creation of the id is incremented every time this method is called.
+	 * This method creates an ID for a {@link LexicalEntry},  
+	 * using the format specified by {@link WNConvUtil.makeLexicalEntryId} <br>
+	 * If there are problems uses a generated id. The running number used 
+	 * for the creation of the id is incremented every time this method is called.
 	 * @return ID of a lexicalEntry
 	 */
-	private String createID() {
-		StringBuffer sb = new StringBuffer(32);
-		sb.append("WN_LexicalEntry_").append(lexicalEntryNumber++);
-		return sb.toString();
+	private String createID(POS pos, String lemmaString) {
+	    if (lemmaString == null 
+	            || lemmaString.trim().isEmpty()
+	            || pos == null){
+	        String id = WNConvUtil.makeId(prefix, LexicalEntry.class, "generated-"+lexicalEntryNumber);
+            logger.warn("Found problems for lexical entry with lemmaString " + lemmaString + " and pos " + pos +","
+                    + " will assign id " + id);
+            lexicalEntryNumber += 1;
+            usedIds.add(id);
+	        return id;	                 
+        } else {
+            
+            String baseId = WNConvUtil.makeLexicalEntryId(prefix,pos, lemmaString);
+            String candId = baseId;
+            int i = 1;
+            while (usedIds.contains(candId)){                
+                candId =  baseId + "-" + i;
+                i++;
+            }
+            usedIds.add(candId);
+            return candId;
+        }	    	    	    	           
 	}
 
 	/**
@@ -402,4 +437,10 @@ public class LexicalEntryGenerator {
 		return lexemeToGroupMappings.get(lexeme);
 	}
 
+	/**
+	 * Returns the prefix used in ids, like i.e."WN" 
+	 */
+	public String getPrefix(){
+	    return prefix;
+	}
 }

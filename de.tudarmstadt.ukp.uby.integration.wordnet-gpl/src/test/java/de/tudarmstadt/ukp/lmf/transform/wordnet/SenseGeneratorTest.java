@@ -38,6 +38,7 @@ import org.junit.Test;
 import de.tudarmstadt.ukp.lmf.model.core.LexicalEntry;
 import de.tudarmstadt.ukp.lmf.model.core.Sense;
 import de.tudarmstadt.ukp.lmf.transform.wordnet.util.IndexSenseReader;
+import de.tudarmstadt.ukp.lmf.transform.wordnet.util.WNConvUtil;
 
 
 /**
@@ -84,7 +85,7 @@ import de.tudarmstadt.ukp.lmf.transform.wordnet.util.IndexSenseReader;
 	public final void testGenerateSensesSetOfWordLexicalEntry() throws JWNLException {
 //		SynsetGenerator synsetGenerator = new SynsetGenerator(wordNet,
 //				new File(UBY_HOME +"/WordNet/cache/ExampleSentenceLexemeMapping.xml"), "WordNet_3.0_eng");
-		SynsetGenerator synsetGenerator = new SynsetGenerator(wordNet, "WordNet_3.0_eng");
+		SynsetGenerator synsetGenerator = new SynsetGenerator(wordNet, "WordNet_3.0_eng", WNConvUtil.DEFAULT_PREFIX);
 		synsetGenerator.initialize();
 		String UBY_HOME = System.getenv("UBY_HOME");
 

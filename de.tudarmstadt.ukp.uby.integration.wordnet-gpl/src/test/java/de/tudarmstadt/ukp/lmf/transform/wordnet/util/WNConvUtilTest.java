@@ -19,12 +19,15 @@
 package de.tudarmstadt.ukp.lmf.transform.wordnet.util;
 
 import static org.junit.Assert.assertEquals;
+import static de.tudarmstadt.ukp.lmf.transform.wordnet.util.WNConvUtil.xmlId;
+import static de.tudarmstadt.ukp.lmf.transform.wordnet.util.WNConvUtil.makeLexicalEntryId;
 import net.sf.extjwnl.data.POS;
 
 import org.junit.Ignore;
 import org.junit.Test;
 
 import de.tudarmstadt.ukp.lmf.model.enums.EPartOfSpeech;
+import junit.framework.Assert;
 
 /**
  * Tests methods of {@link WNConvUtil} class.<br>
@@ -37,7 +40,7 @@ import de.tudarmstadt.ukp.lmf.model.enums.EPartOfSpeech;
  * @since 0.2.0
  *
  */
-@Ignore public class WNConvUtilTest {
+ public class WNConvUtilTest {
 
 	@Test
 	public void testGetPos() {
@@ -47,4 +50,47 @@ import de.tudarmstadt.ukp.lmf.model.enums.EPartOfSpeech;
 		assertEquals(EPartOfSpeech.adverb, WNConvUtil.getPOS(POS.ADVERB));
 	}
 
+	
+    /**
+     * div new
+     */
+    @Test
+    public void testLexicalEntryId(){
+        
+        assertEquals("wn_le_n-hello", makeLexicalEntryId("wn", POS.NOUN, "hello"));
+        assertEquals("wn_le_n-_apostrophe_hood", makeLexicalEntryId("wn", POS.NOUN, "'hood"));
+    }	
+	
+	/**
+	 * div new
+	 */
+	@Test
+	public void testXmlId(){	    	   
+	    	    
+	    assertEquals("_euro-sign_", xmlId("€"));
+	    assertEquals(".", xmlId("."));
+	    assertEquals("_", xmlId("_"));
+	    assertEquals("-", xmlId("-"));
+	    assertEquals("_apostrophe_", xmlId("'"));
+	    assertEquals("_reverse-solidus_z_euro-sign_", xmlId("\\z€"));
+	    
+       try {
+            assertEquals("", xmlId(null));
+            Assert.fail("Shouldn't arrive here!");
+        } catch (IllegalArgumentException ex){          
+        }
+       
+       try {
+           assertEquals("", xmlId(" "));
+           Assert.fail("Shouldn't arrive here!");
+       } catch (IllegalArgumentException ex){          
+       }
+        
+        try {
+            assertEquals("", xmlId(""));
+            Assert.fail("Shouldn't arrive here!");
+        } catch (IllegalArgumentException ex){          
+        }
+
+	}
 }

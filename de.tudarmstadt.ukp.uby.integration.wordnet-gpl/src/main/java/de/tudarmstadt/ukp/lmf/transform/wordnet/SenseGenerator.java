@@ -21,6 +21,7 @@ package de.tudarmstadt.ukp.lmf.transform.wordnet;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +44,7 @@ import de.tudarmstadt.ukp.lmf.model.semantics.MonolingualExternalRef;
 import de.tudarmstadt.ukp.lmf.model.semantics.SenseExample;
 import de.tudarmstadt.ukp.lmf.model.semantics.Synset;
 import de.tudarmstadt.ukp.lmf.transform.wordnet.util.IndexSenseReader;
+import de.tudarmstadt.ukp.lmf.transform.wordnet.util.WNConvUtil;
 
 /**
  * This class offers methods for generating instances of {@link Sense} class
@@ -69,6 +71,9 @@ public class SenseGenerator {
 	// Mappings between lexemes and associated Senses
 	private final Map<Word, Sense> lexemeSenseMappings;
 
+	/** div new */
+    private final Set<String> usedIds;
+	
 	private final String resourceVersion;
 
 	private final Log logger = LogFactory.getLog(getClass());
@@ -86,6 +91,7 @@ public class SenseGenerator {
 		this.synsetGenerator = synsetGenerator;
 		this.isr = isr;
 		this.resourceVersion = resourceVersion;
+		this.usedIds = new HashSet<>();
 
 		lexemeSenseMappings = new TreeMap<Word, Sense>(new Comparator<Word>() {
 			@Override
@@ -122,7 +128,17 @@ public class SenseGenerator {
 			Sense sense = new Sense();
 			lexemeSenseMappings.put(lexeme, sense);
 			//set ID
-			sense.setId(getNewID());
+
+			String newId = WNConvUtil.xmlId(lexeme.getPOS().getKey()+"_"+ lexeme.getSenseKey());
+			
+		    int i = 1;
+		    while (usedIds.contains(newId)){
+                newId = WNConvUtil.xmlId(lexeme.getPOS().getKey()+"_"+i+"_"+ lexeme.getSenseKey());
+                i++;
+            }    
+		    usedIds.add(newId);
+			sense.setId(newId);
+			
 			sense.setLexicalEntry(lexicalEntry);
 			// setting index of the Sense (lexeme's Position in the WN-Synset)
 			String senseNumber = isr.getSenseNumber(lexeme.getSenseKey());
@@ -164,25 +180,27 @@ public class SenseGenerator {
 			semanticLabel.setLabel(lexemeSynset.getLexFileName());
 			semanticLabel.setType(ELabelTypeSemantics.semanticField);
 
-			sense.setSemanticLabels(semanticLabels);
+			sense.setSemanticLabels(semanticLabels);		
+						
+            /* div commented, external ref is redundant if we use Wordnet ids 
 
-			// Creating MonolingualExternalRef for a Sense
+            // Creating MonolingualExternalRef for a Sense
 			MonolingualExternalRef monolingualExternalRef = new MonolingualExternalRef();
-			/**/
 			StringBuffer sb = new StringBuffer(32);
 			sb.append(lexeme.getSynset().getPOS());
 			sb.append(" ");
 			sb.append(lexeme.getSenseKey());
-			monolingualExternalRef.setExternalSystem("WordNet 3.0 part of speech and sense key");
+			monolingualExternalRef.setExternalSystem("WordNet " + resourceVersion + " part of speech and sense key");
 			monolingualExternalRef.setExternalReference(sb.toString());
-			/**/
+			
 			//TODO: Check implications!
 //		monolingualExternalRef.setExternalSystem(resourceVersion + "_" + EXTERNAL_SYSTEM_SENSE_KEY);
 //		monolingualExternalRef.setExternalReference(lexeme.getSenseKey());
 			List<MonolingualExternalRef> monolingualExternalRefs = new LinkedList<MonolingualExternalRef>();
 			monolingualExternalRefs.add(monolingualExternalRef);
 			sense.setMonolingualExternalRefs(monolingualExternalRefs);
-
+			*/
+			
 			//*** create sense examples of the sense *** //
 			List<SenseExample> senseExamples = new ArrayList<SenseExample>();
 			List<String> exampleStrings = synsetGenerator.getExamples(lexeme);
@@ -190,10 +208,8 @@ public class SenseGenerator {
                 for(String exampleSentence : exampleStrings){
 					SenseExample senseExample = new SenseExample();
 
-					// Create an id for the senseExample
-					StringBuffer id = new StringBuffer(32);
-					id.append("WN_SenseExample_").append(senseExampleNumber++);
-					senseExample.setId(id.toString());
+					// Create an id for the senseExample					
+					senseExample.setId(WNConvUtil.makeId(synsetGenerator.getPrefix(), SenseExample.class, Integer.toString(senseExampleNumber++)));
 					senseExample.setExampleType(EExampleType.other);
 					TextRepresentation textRepresentation = new TextRepresentation();
 					textRepresentation.setLanguageIdentifier(ELanguageIdentifier.ENGLISH);
@@ -219,18 +235,6 @@ public class SenseGenerator {
 		return result;
 	}
 
-	/**
-	 * This method generates a Sense-ID. <br>
-	 * Every time the method is called, it increments the running number used for the creation of the ID.
-	 * @return an ID of a Sense-instance
-	 * @see Sense
-	 */
-	private String getNewID() {
-		StringBuffer sb = new StringBuffer(64);
-		sb.append("WN_Sense_").append(Integer.toString(lmfSenseNumber));
-		lmfSenseNumber++;
-		return sb.toString();
-	}
 
 	/**
 	 * Returns the Sense-instance associated with the consumed lexeme

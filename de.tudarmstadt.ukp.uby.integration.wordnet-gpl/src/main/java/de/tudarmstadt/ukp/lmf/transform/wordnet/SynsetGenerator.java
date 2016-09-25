@@ -18,12 +18,14 @@
  */
 package de.tudarmstadt.ukp.lmf.transform.wordnet;
 
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -95,7 +97,6 @@ public class SynsetGenerator {
 	private boolean initialized = false;
 
 	private final List<Synset> synsets = new ArrayList<Synset>();
-	private int lmfSynsetNumber = 0; // running number used for creating IDs of Synsets
 
 	// Mappings betweenWordNet's synsets and Uby-LMF synsets
 	private final Map<net.sf.extjwnl.data.Synset, Synset>
@@ -106,6 +107,7 @@ public class SynsetGenerator {
 
 	protected List<String> annotationList;
 	protected int[] annotationCounter = new int[10];
+	private String prefix; 
 
 	/**
 	 * This method constructs a {@link SynsetGenerator} based on the consumed parameters
@@ -114,9 +116,11 @@ public class SynsetGenerator {
 	 * @param resourceVersion Version of the resource
 	 * @return SynsetGenerator
 	 */
-	public SynsetGenerator(final Dictionary wordnet, final String resourceVersion) {
+	public SynsetGenerator(final Dictionary wordnet, final String resourceVersion, String prefix) {
 		this.wordnet = wordnet;
 		this.resourceVersion = resourceVersion;
+		this.prefix = prefix;
+		
 	}
 
 	/** Transforms WordNet synsets to UBY synsets and stores the result in
@@ -135,8 +139,7 @@ public class SynsetGenerator {
 
 				// Synset.
 				Synset lmfSynset = new Synset();
-				lmfSynset.setId("WN_Synset_" + lmfSynsetNumber);
-				lmfSynsetNumber++;
+				lmfSynset.setId(WNConvUtil.makeSynsetId(prefix, wnSynset));				
 				synsets.add(lmfSynset);
 				wnSynsetLMFSynsetMappings.put(wnSynset, lmfSynset);
 
@@ -546,5 +549,8 @@ public class SynsetGenerator {
 	public List<String> getExamples(Word lexeme){
 		return examples.get(lexeme.getSenseKey());
 	}
-
+	
+	public String getPrefix(){
+	    return prefix;
+	}
 }

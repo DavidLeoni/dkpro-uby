@@ -22,6 +22,7 @@ package de.tudarmstadt.ukp.lmf.transform.wordnet;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -58,7 +59,7 @@ public class RelatedFormGenerator {
 	 * @see LexicalEntry
 	 */
 	public RelatedFormGenerator(LexicalEntryGenerator lexicalEntryGenerator) {
-		this.lexicalEntryGenerator = lexicalEntryGenerator;
+		this.lexicalEntryGenerator = lexicalEntryGenerator;		
 		initializePointerMappings();
 	}
 

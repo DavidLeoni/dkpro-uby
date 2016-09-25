@@ -26,6 +26,7 @@
 		<version>0.7.0</version>
 	</parent>
 	<artifactId>de.tudarmstadt.ukp.uby.integration.wordnet-gpl</artifactId>
+	<version>0.7.0-div</version>
 	<name>Integration: WordNet</name>
 	<licenses>
 		<license>

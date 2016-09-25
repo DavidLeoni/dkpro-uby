@@ -52,6 +52,7 @@ import de.tudarmstadt.ukp.lmf.model.semantics.SynSemCorrespondence;
 import de.tudarmstadt.ukp.lmf.model.syntax.LexemeProperty;
 import de.tudarmstadt.ukp.lmf.model.syntax.SubcategorizationFrame;
 import de.tudarmstadt.ukp.lmf.model.syntax.SyntacticArgument;
+import de.tudarmstadt.ukp.lmf.transform.wordnet.util.WNConvUtil;
 
 /**
  * This class extracts subcategorization frames of
@@ -85,6 +86,8 @@ public class SubcategorizationFrameExtractor {
 	private final Log logger = LogFactory.getLog(getClass());
 
 	private final TreeSet<SubcategorizationFrame> allSubcategorizationFrames = new TreeSet<SubcategorizationFrame>();
+	
+	private String prefix;
 
 	/**
 	 * Constructs a {@link SubcategorizationFrameExtractor}
@@ -92,7 +95,8 @@ public class SubcategorizationFrameExtractor {
 	 * @return SubcategorizationFrameExtractor-instance used for parsing subcatStream
 	 * @see SubcategorizationFrame
 	 */
-	public SubcategorizationFrameExtractor(InputStream subcatStream){
+	public SubcategorizationFrameExtractor(InputStream subcatStream, String prefix){
+	    this.prefix = prefix;
 		if(codeFrameMappings.isEmpty()){
 			this.subcatStream = subcatStream;
 			parseSubcatMappings();
@@ -182,7 +186,7 @@ public class SubcategorizationFrameExtractor {
 
 			if (!synArgSubcatFrameMapping.containsKey(synArgs)) {
 				SubcategorizationFrame subcategorizationFrame = new SubcategorizationFrame();
-				String id = "WN_SubcategorizationFrame_".concat(Integer.toString(subcatFrameNumber));
+				String id = prefix + "_sf_".concat(Integer.toString(subcatFrameNumber));
 				subcategorizationFrame.setId(id);
 				subcatFrameNumber++;
 				subcategorizationFrame = parseArguments(synSemArgs,subcategorizationFrame);
@@ -246,7 +250,7 @@ public class SubcategorizationFrameExtractor {
 		for(String arg : args) {
 			if (!arg.contains("syntacticProperty")) {
 				SyntacticArgument syntacticArgument = new SyntacticArgument();
-				syntacticArgument.setId("WN_SyntacticArgument_".concat(Integer.toString(syntacticArgumentNumber)));
+				syntacticArgument.setId(WNConvUtil.makeId(prefix, SyntacticArgument.class, Integer.toString(syntacticArgumentNumber)));
 				syntacticArgumentNumber++;
 				String[] atts = arg.split(",");
 				for(String att : atts){
@@ -331,7 +335,7 @@ public class SubcategorizationFrameExtractor {
 	private SemanticPredicate parseSemanticArguments(String synSemArgs,SubcategorizationFrame subcategorizationFrame) {
 		// list of mappings between syntactic and semantic arguments is to be created
 		SemanticPredicate semanticPredicate = new SemanticPredicate();
-		semanticPredicate.setId("WN_SemanticPredicate_".concat(Integer.toString(semanticPredicateNumber)));
+		semanticPredicate.setId(prefix + "_sp_".concat(Integer.toString(semanticPredicateNumber)));
 		semanticPredicateNumber++;
 		List<SemanticArgument> semanticArguments = new LinkedList<SemanticArgument>();
 		List<SynSemArgMap> synSemArgMaps = new LinkedList<SynSemArgMap>();
@@ -353,7 +357,7 @@ public class SubcategorizationFrameExtractor {
 				String attName = splits[0];
 				if(attName.equals("semanticRole")){
 					SemanticArgument semanticArgument = new SemanticArgument();
-					semanticArgument.setId("WN_SemanticArgument_".concat(Integer.toString(semanticArgumentNumber)));
+					semanticArgument.setId(WNConvUtil.makeId(prefix, SemanticArgument.class, Integer.toString(semanticArgumentNumber)));
 					semanticArgumentNumber++;
 					semanticArgument.setSemanticRole(splits[1]);
 					semanticArguments.add(semanticArgument);
@@ -379,7 +383,8 @@ public class SubcategorizationFrameExtractor {
 		semanticPredicate.setSemanticArguments(semanticArguments);
 
 		SynSemCorrespondence synSemCorrespondence = new SynSemCorrespondence();
-		synSemCorrespondence.setId("WN_SynSemCorrespondence_".concat(Integer.toString(synSemCorrespondenceNumber)));
+		synSemCorrespondence.setId(
+		        WNConvUtil.makeId(prefix, SynSemCorrespondence.class , Integer.toString(synSemCorrespondenceNumber)));
 		synSemCorrespondenceNumber++;
 		synSemCorrespondence.setSynSemArgMaps(synSemArgMaps);
 		synSemCorrespondences.add(synSemCorrespondence);
@@ -387,6 +392,9 @@ public class SubcategorizationFrameExtractor {
 		return semanticPredicate;
 	}
 
+	private void setId(SubcategorizationFrame sf){
+	    sf.setId(prefix + "_sf_".concat(Integer.toString(subcatFrameNumber++)));
+	}
 	/**
 	 * This method adds mappings to the codes of SubcategorizationFrames
 	 * that apply only for adjectives
@@ -395,7 +403,7 @@ public class SubcategorizationFrameExtractor {
 	private void addAdjectiveSubcats() {
 		// (p) predicativeAdjective
 		SubcategorizationFrame predAdj = new SubcategorizationFrame();
-		predAdj.setId("WN_SubcategorizationFrame_".concat(Integer.toString(subcatFrameNumber++)));
+		setId(predAdj);
 		LexemeProperty lpPredAdj = new LexemeProperty();
 		lpPredAdj.setSyntacticProperty(ESyntacticProperty.predicativeAdjective);
 		predAdj.setLexemeProperty(lpPredAdj);
@@ -403,7 +411,7 @@ public class SubcategorizationFrameExtractor {
 
 		// (a) preattributiveAdjective
 		SubcategorizationFrame preattAdj = new SubcategorizationFrame();
-		preattAdj.setId("WN_SubcategorizationFrame_".concat(Integer.toString(subcatFrameNumber++)));
+		setId(preattAdj);
 		LexemeProperty lpPreattAdj = new LexemeProperty();
 		lpPreattAdj.setSyntacticProperty(ESyntacticProperty.nonPredicativeAdjective);
 		preattAdj.setLexemeProperty(lpPreattAdj);
@@ -411,7 +419,7 @@ public class SubcategorizationFrameExtractor {
 
 		// (ip) postattributiveAdjective
 		SubcategorizationFrame postattAdj = new SubcategorizationFrame();
-		postattAdj.setId("WN_SubcategorizationFrame_".concat(Integer.toString(subcatFrameNumber++)));
+		setId(postattAdj);
 		LexemeProperty lpPostattAdj = new LexemeProperty();
 		lpPostattAdj.setSyntacticProperty(ESyntacticProperty.postpositiveAdjective);
 		postattAdj.setLexemeProperty(lpPostattAdj);

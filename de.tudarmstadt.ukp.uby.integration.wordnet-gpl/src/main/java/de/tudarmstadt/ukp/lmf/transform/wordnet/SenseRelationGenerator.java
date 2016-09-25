@@ -21,6 +21,7 @@ package de.tudarmstadt.ukp.lmf.transform.wordnet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TreeMap;
 
 import net.sf.extjwnl.data.POS;
@@ -60,7 +61,7 @@ public class SenseRelationGenerator {
 	 * The constructor initializes the mappings used by the generator.
 	 */
 	public SenseRelationGenerator(LexicalEntryGenerator lexicalEntryGenerator) {
-		this.lexicalEntryGenerator = lexicalEntryGenerator;
+		this.lexicalEntryGenerator = lexicalEntryGenerator;		
 		initializePointerMappings();
 	}
 
