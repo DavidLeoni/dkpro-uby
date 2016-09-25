@@ -26,6 +26,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 
+import net.sf.extjwnl.JWNLException;
 import net.sf.extjwnl.data.POS;
 import net.sf.extjwnl.data.Pointer;
 import net.sf.extjwnl.data.Word;
@@ -124,7 +125,12 @@ public class RelatedFormGenerator {
 		relatedForm.setRelType(relType);
 
 		// setting targetSense
-		Word targetLexeme = (Word) pointer.getTarget();
+		Word targetLexeme;
+        try {
+            targetLexeme = (Word) pointer.getTarget();
+        } catch (JWNLException e) {        
+            throw new RuntimeException(e);
+        }
 		relatedForm.setTargetSense(lexicalEntryGenerator.getSenseGenerator().getSense(targetLexeme));
 
 		// setting targeted LexicalEntry

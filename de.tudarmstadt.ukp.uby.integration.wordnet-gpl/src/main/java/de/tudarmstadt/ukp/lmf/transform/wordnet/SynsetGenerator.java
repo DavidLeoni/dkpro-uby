@@ -547,7 +547,11 @@ public class SynsetGenerator {
 	 * @see net.sf.extjwnl.data.Synset
 	 */
 	public List<String> getExamples(Word lexeme){
-		return examples.get(lexeme.getSenseKey());
+		try {
+            return examples.get(lexeme.getSenseKey());
+        } catch (JWNLException e) {        
+            throw new RuntimeException(e);
+        }
 	}
 	
 	public String getPrefix(){
