@@ -20,12 +20,10 @@ package de.tudarmstadt.ukp.lmf.transform.wordnet;
 
 import java.io.File;
 import java.io.InputStream;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.LinkedList;
-import java.util.Map;
-import java.util.Objects;
-
-
+import java.util.List;
 import net.sf.extjwnl.JWNLException;
 import net.sf.extjwnl.dictionary.Dictionary;
 
@@ -33,17 +31,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import de.tudarmstadt.ukp.lmf.model.core.GlobalInformation;
-import de.tudarmstadt.ukp.lmf.model.core.LexicalEntry;
 import de.tudarmstadt.ukp.lmf.model.core.LexicalResource;
 import de.tudarmstadt.ukp.lmf.model.core.Lexicon;
-import de.tudarmstadt.ukp.lmf.model.core.Sense;
 import de.tudarmstadt.ukp.lmf.model.enums.ELanguageIdentifier;
-import de.tudarmstadt.ukp.lmf.model.semantics.SemanticArgument;
-import de.tudarmstadt.ukp.lmf.model.semantics.SenseExample;
-import de.tudarmstadt.ukp.lmf.model.semantics.SynSemCorrespondence;
-import de.tudarmstadt.ukp.lmf.model.semantics.Synset;
-import de.tudarmstadt.ukp.lmf.model.syntax.SubcategorizationFrame;
-import de.tudarmstadt.ukp.lmf.model.syntax.SyntacticArgument;
+import de.tudarmstadt.ukp.lmf.model.meta.MetaData;
 import de.tudarmstadt.ukp.lmf.transform.wordnet.util.WNConvUtil;
 
 
@@ -135,10 +126,22 @@ public class WNConverter {
 			lexicalResource.setName("WordNet");
 			lexicalResource.setDtdVersion(dtd_version);
 
+			
 			// *** Setting GlobalInformation *** //
 			GlobalInformation globalInformation = new GlobalInformation();
 			globalInformation.setLabel("LMF representation of WordNet " + resourceVersion);
 			lexicalResource.setGlobalInformation(globalInformation);
+			
+            MetaData metadata = new MetaData();
+            
+            metadata.setAutomatic(true);
+            metadata.setCreationDate(new Date());
+            metadata.setCreationProcess("automatic");
+            metadata.setCreationTool("DKPro Wordnet to LMF converter v0.7.0-div as modified by David Leoni https://github.com/DavidLeoni/dkpro-uby/tree/master/de.tudarmstadt.ukp.uby.integration.wordnet-gpl");
+            metadata.setVersion(resourceVersion);
+            List<MetaData> metadataList = new ArrayList<>();
+            metadataList.add(metadata);
+            lexicalResource.setMetaData(metadataList);			
 
 			//*** Setting Lexicon (only one since WordNet is monolingual)***//
 			Lexicon lexicon = new Lexicon();
