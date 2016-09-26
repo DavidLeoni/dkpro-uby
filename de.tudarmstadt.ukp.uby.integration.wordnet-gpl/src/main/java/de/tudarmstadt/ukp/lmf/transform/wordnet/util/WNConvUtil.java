@@ -176,7 +176,7 @@ public class WNConvUtil {
     /**
      * div new
      * 
-     * Returns something like wn_syn_n321534
+     * Returns something like wn_ss_n321534
      */
     public static String makeSynsetId(String prefix, net.sf.extjwnl.data.Synset wnSynset) {
         return WNConvUtil.makeId(prefix,
