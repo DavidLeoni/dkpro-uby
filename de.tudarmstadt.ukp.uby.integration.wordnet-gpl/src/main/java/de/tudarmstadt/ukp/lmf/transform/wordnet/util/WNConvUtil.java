@@ -36,6 +36,7 @@ import de.tudarmstadt.ukp.lmf.model.core.Sense;
 import de.tudarmstadt.ukp.lmf.model.core.TextRepresentation;
 import de.tudarmstadt.ukp.lmf.model.enums.EPartOfSpeech;
 import de.tudarmstadt.ukp.lmf.model.semantics.SemanticArgument;
+import de.tudarmstadt.ukp.lmf.model.semantics.SemanticPredicate;
 import de.tudarmstadt.ukp.lmf.model.semantics.SenseExample;
 import de.tudarmstadt.ukp.lmf.model.semantics.SynSemCorrespondence;
 import de.tudarmstadt.ukp.lmf.model.semantics.Synset;
@@ -74,6 +75,7 @@ public class WNConvUtil {
         NAMESPACES.put(SyntacticArgument.class, "sya");
         NAMESPACES.put(SemanticArgument.class, "sea");
         NAMESPACES.put(SyntacticBehaviour.class, "sb");
+        NAMESPACES.put(SemanticPredicate.class, "sp");
     }
     
     

@@ -186,7 +186,7 @@ public class SubcategorizationFrameExtractor {
 
 			if (!synArgSubcatFrameMapping.containsKey(synArgs)) {
 				SubcategorizationFrame subcategorizationFrame = new SubcategorizationFrame();
-				String id = prefix + "_sf_".concat(Integer.toString(subcatFrameNumber));
+				String id = WNConvUtil.makeId(prefix, SubcategorizationFrame.class,Integer.toString(subcatFrameNumber));
 				subcategorizationFrame.setId(id);
 				subcatFrameNumber++;
 				subcategorizationFrame = parseArguments(synSemArgs,subcategorizationFrame);
@@ -335,7 +335,7 @@ public class SubcategorizationFrameExtractor {
 	private SemanticPredicate parseSemanticArguments(String synSemArgs,SubcategorizationFrame subcategorizationFrame) {
 		// list of mappings between syntactic and semantic arguments is to be created
 		SemanticPredicate semanticPredicate = new SemanticPredicate();
-		semanticPredicate.setId(prefix + "_sp_".concat(Integer.toString(semanticPredicateNumber)));
+		semanticPredicate.setId(WNConvUtil.makeId(prefix, SemanticPredicate.class,Integer.toString(semanticPredicateNumber)));
 		semanticPredicateNumber++;
 		List<SemanticArgument> semanticArguments = new LinkedList<SemanticArgument>();
 		List<SynSemArgMap> synSemArgMaps = new LinkedList<SynSemArgMap>();
@@ -393,8 +393,9 @@ public class SubcategorizationFrameExtractor {
 	}
 
 	private void setId(SubcategorizationFrame sf){
-	    sf.setId(prefix + "_sf_".concat(Integer.toString(subcatFrameNumber++)));
+	    sf.setId(WNConvUtil.makeId(prefix, SubcategorizationFrame.class, Integer.toString(subcatFrameNumber++)));
 	}
+	
 	/**
 	 * This method adds mappings to the codes of SubcategorizationFrames
 	 * that apply only for adjectives
