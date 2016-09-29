@@ -66,8 +66,8 @@ import junit.framework.Assert;
     @Test
     public void testLexicalEntryId(){
         
-        assertEquals("wn_le_n-hello", makeLexicalEntryId("wn", POS.NOUN, "hello"));
-        assertEquals("wn_le_n-_APOSTROPHE_hood", makeLexicalEntryId("wn", POS.NOUN, "'hood"));
+        assertEquals("wn_le_n_hello", makeLexicalEntryId("wn", POS.NOUN, "hello"));
+        assertEquals("wn_le_n__APOSTROPHE_hood", makeLexicalEntryId("wn", POS.NOUN, "'hood"));
     }	
 	
 	/**
@@ -114,10 +114,10 @@ import junit.framework.Assert;
 	    Dictionary d = Dictionary.getDefaultResourceInstance();
 	    
 	    Word w = d.getSynsetIterator(POS.NOUN).next().getWords().get(0);
-	    if (w.getLemma().equals("car")){
-	        logger.debug("Sense key : " + w.getSenseKey());
-	        logger.debug("lmf id    : " + WNConvUtil.makeSenseId(w));
-	    }
+	    
+	    logger.debug("Sense key : " + w.getSenseKey());
+	    logger.debug("lmf id    : " + WNConvUtil.makeSenseId("wn30",w));
+	    
 	}
 	
 }

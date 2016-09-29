@@ -194,7 +194,7 @@ public class WNConvUtil {
      * For sanitization rules, see {@link #xmlId}
      */
     public static String makeLexicalEntryId(String prefix, POS pos, String lemma) {        
-        return makeId(prefix, LexicalEntry.class, xmlId(pos.getKey() + "-" + lemma));
+        return makeId(prefix, LexicalEntry.class, xmlId(pos.getKey() + "_" + lemma));
     }    
     
     /**
@@ -217,24 +217,25 @@ public class WNConvUtil {
      * 
      *   <pre>entity%1:03:00::</pre>   
      *   returns 
-     *   <pre>entity_1.03.00..  </pre>        
+     *   <pre>prefix_entity_1.03.00..  </pre>        
      * <p>
      * 
      * For lemma sanitization, see {@link #xmlId(String)}
      * @return sense key
      * @throws JWNLException JWNLException
      */
-    public static String makeSenseId(Word lexeme) {
+    public static String makeSenseId(String prefix, Word lexeme) {
         int ss_type = lexeme.getPOS().getId();
         if (POS.ADJECTIVE == lexeme.getSynset().getPOS() && lexeme.getSynset().isAdjectiveCluster()) {
             ss_type = POS.ADJECTIVE_SATELLITE_ID;
         }
 
         String dot = ".";
-        
-        String lemma = xmlId(lexeme.getLemma());
-        
-        StringBuilder senseKey = new StringBuilder(lemma);
+                
+        // a bit convoluted but should make sense
+        StringBuilder senseKey = 
+                new StringBuilder(prefix + "_" 
+                            + xmlId(NAMESPACES.get(Sense.class) + "_" + lexeme.getLemma()));
         senseKey.append("_").append(ss_type).append(dot);
         if (lexeme.getSynset().getLexFileNum() < 10) {
             senseKey.append("0");
