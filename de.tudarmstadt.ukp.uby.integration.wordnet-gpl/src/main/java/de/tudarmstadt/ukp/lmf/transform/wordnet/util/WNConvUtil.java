@@ -29,7 +29,11 @@ import java.util.regex.Pattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import net.sf.extjwnl.JWNLException;
 import net.sf.extjwnl.data.POS;
+import net.sf.extjwnl.data.Pointer;
+import net.sf.extjwnl.data.PointerType;
+import net.sf.extjwnl.data.Word;
 import de.tudarmstadt.ukp.lmf.model.core.LexicalEntry;
 import de.tudarmstadt.ukp.lmf.model.core.Lexicon;
 import de.tudarmstadt.ukp.lmf.model.core.Sense;
@@ -112,8 +116,10 @@ public class WNConvUtil {
 
 	
     /**
+     * div new
+     * 
      * Makes a generic id (like i.e. 'wn_lex_2') partitioned by {@code clazz}
-     *  using {@link #NAMESPACES} mappings.  
+     *  using {@link #NAMESPACES} mappings. No sanitization is done on value!
      */
     public static String makeId(String prefix, Class clazz, String value) {
         return prefix + "_" + NAMESPACES.get(clazz) + "_" + value;
@@ -124,6 +130,9 @@ public class WNConvUtil {
      * 
      * Sanitizes ids so they can be valid xml ids for DTDs
      * (technically, they need to be NCNames).
+     * 
+     * In particular, non letters are converted to their unicode equivalent name in capital letters, 
+     *   so for example lemma {@code 'hood} becomes {@code _APOSTROPHE_hood}
      */
     public static String xmlId(String wnId){
         if (wnId == null){
@@ -133,28 +142,41 @@ public class WNConvUtil {
             throw new IllegalArgumentException("Tried to parse a blank wordnet id!");
         }
         
-        Pattern p = Pattern.compile("[^\\p{L}|\\.|\\_|-]", Pattern.UNICODE_CHARACTER_CLASS);
-        Matcher m = p.matcher(wnId);
+        String fid;
+        
+        String first = wnId.substring(0,1); 
+        
+        if ( first.equals(".")
+                || first.equals("-")
+                || Character.isDigit(first.charAt(0))){
+            fid = "_" + wnId;
+        } else {
+            fid = wnId;
+        }
+        
+        
+        Pattern p = Pattern.compile("[^\\p{L}|\\d|\\.|\\_|-]", Pattern.UNICODE_CHARACTER_CLASS);
+        Matcher m = p.matcher(fid);
         StringBuilder sb = new StringBuilder();        
         int lastEnd = 0;
         
-        while (m.find()){          
-            sb.append(wnId.substring(lastEnd, m.start()));
+        while (m.find()){                      
+            sb.append(fid.substring(lastEnd, m.start()));
             if (m.group().length() > 1){
                 logger.warn("Found group in id of length > 1: " + m.group());
             }
-            int codePoint = Character.codePointAt(wnId, m.start());
+            int codePoint = Character.codePointAt(fid, m.start());            
             String charName = Character.getName(codePoint);
             if (charName == null){
                 sb.append("-");
             } else {               
-                sb.append("_"+charName.replaceAll(p.toString(), "-").toLowerCase() + "_");    
+                sb.append("_"+charName.replaceAll(p.toString(), "-") + "_");    
             }
             
             lastEnd = m.end();
         }
-        if (lastEnd < wnId.length()){
-            sb.append(wnId.substring(lastEnd, wnId.length()));
+        if (lastEnd < fid.length()){
+            sb.append(fid.substring(lastEnd, fid.length()));
         }
                 
         return sb.toString();
@@ -167,10 +189,12 @@ public class WNConvUtil {
     /**
      * div new
      * 
-     * Returns something like wn_le_n-vehicle
+     * Returns a valid xml id (i.e. something like wn_le_n-vehicle)
+     * 
+     * For sanitization rules, see {@link #xmlId}
      */
     public static String makeLexicalEntryId(String prefix, POS pos, String lemma) {        
-        return makeId(prefix, LexicalEntry.class, pos.getKey() + "-" + xmlId(lemma));
+        return makeId(prefix, LexicalEntry.class, xmlId(pos.getKey() + "-" + lemma));
     }    
     
     /**
@@ -183,5 +207,69 @@ public class WNConvUtil {
                 Synset.class, 
                 wnSynset.getPOS().getKey() + Long.toString(wnSynset.getOffset()));
     }
+
+    /**
+     * div new 
+     * 
+     * <p>div copied and adapted from {@link Word#getSenseKey()} so it returns valid XML ids.
+     *      
+     * For example, for the SenseKey
+     * 
+     *   <pre>entity%1:03:00::</pre>   
+     *   returns 
+     *   <pre>entity_1.03.00..  </pre>        
+     * <p>
+     * 
+     * For lemma sanitization, see {@link #xmlId(String)}
+     * @return sense key
+     * @throws JWNLException JWNLException
+     */
+    public static String makeSenseId(Word lexeme) {
+        int ss_type = lexeme.getPOS().getId();
+        if (POS.ADJECTIVE == lexeme.getSynset().getPOS() && lexeme.getSynset().isAdjectiveCluster()) {
+            ss_type = POS.ADJECTIVE_SATELLITE_ID;
+        }
+
+        String dot = ".";
+        
+        String lemma = xmlId(lexeme.getLemma());
+        
+        StringBuilder senseKey = new StringBuilder(lemma);
+        senseKey.append("_").append(ss_type).append(dot);
+        if (lexeme.getSynset().getLexFileNum() < 10) {
+            senseKey.append("0");
+        }
+        senseKey.append(lexeme.getSynset().getLexFileNum()).append(dot);
+        if (lexeme.getLexId() < 10) {
+            senseKey.append("0");
+        }
+        senseKey.append(lexeme.getLexId()).append(dot);
+
+        if (POS.ADJECTIVE_SATELLITE_ID == ss_type) {
+            List<Pointer> p = lexeme.getSynset().getPointers(PointerType.SIMILAR_TO);
+            if (0 < p.size()) {
+                Pointer headWord = p.get(0);
+                List<Word> words;
+                try {
+                    words = headWord.getTargetSynset().getWords();
+                } catch (JWNLException e) {                
+                    throw new RuntimeException(e);
+                }
+                if (0 < words.size()) {
+                    Word word = words.get(0);
+                    senseKey.append(xmlId(word.getLemma())).append(dot);
+                    if (word.getLexId() < 10) {
+                        senseKey.append("0");
+                    }
+                    senseKey.append(word.getLexId());
+                }
+            }
+        } else {
+            senseKey.append(dot);
+        }
+
+        return senseKey.toString();
+    }
+    
     
 }
