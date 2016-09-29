@@ -67,7 +67,7 @@ import junit.framework.Assert;
     public void testLexicalEntryId(){
         
         assertEquals("wn_le_n-hello", makeLexicalEntryId("wn", POS.NOUN, "hello"));
-        assertEquals("wn_le_n-_apostrophe_hood", makeLexicalEntryId("wn", POS.NOUN, "'hood"));
+        assertEquals("wn_le_n-_APOSTROPHE_hood", makeLexicalEntryId("wn", POS.NOUN, "'hood"));
     }	
 	
 	/**
