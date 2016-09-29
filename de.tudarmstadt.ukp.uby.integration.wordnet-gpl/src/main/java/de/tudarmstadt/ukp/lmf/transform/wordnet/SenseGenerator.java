@@ -142,7 +142,7 @@ public class SenseGenerator {
                 throw new RuntimeException(e);
             }
 			
-			String newId = WNConvUtil.xmlId(lexeme.getPOS().getKey()+"_"+ senseKey);
+			String newId = WNConvUtil.makeSenseId(lexeme);
 			
 		    int i = 1;
 		    while (usedIds.contains(newId)){

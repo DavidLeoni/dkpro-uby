@@ -19,11 +19,18 @@
 package de.tudarmstadt.ukp.lmf.transform.wordnet.util;
 
 import static org.junit.Assert.assertEquals;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import static de.tudarmstadt.ukp.lmf.transform.wordnet.util.WNConvUtil.xmlId;
 import static de.tudarmstadt.ukp.lmf.transform.wordnet.util.WNConvUtil.makeLexicalEntryId;
-import net.sf.extjwnl.data.POS;
 
-import org.junit.Ignore;
+import net.sf.extjwnl.JWNLException;
+import net.sf.extjwnl.data.POS;
+import net.sf.extjwnl.data.Word;
+import net.sf.extjwnl.dictionary.Dictionary;
+
 import org.junit.Test;
 
 import de.tudarmstadt.ukp.lmf.model.enums.EPartOfSpeech;
@@ -41,6 +48,8 @@ import junit.framework.Assert;
  *
  */
  public class WNConvUtilTest {
+     
+     private final static Log logger = LogFactory.getLog(WNConvUtilTest.class);
 
 	@Test
 	public void testGetPos() {
@@ -65,14 +74,20 @@ import junit.framework.Assert;
 	 * div new
 	 */
 	@Test
-	public void testXmlId(){	    	   
+	public void testXmlId(){
 	    	    
-	    assertEquals("_euro-sign_", xmlId("€"));
-	    assertEquals(".", xmlId("."));
+	    assertEquals("_EURO-SIGN_", xmlId("€"));
 	    assertEquals("_", xmlId("_"));
-	    assertEquals("-", xmlId("-"));
-	    assertEquals("_apostrophe_", xmlId("'"));
-	    assertEquals("_reverse-solidus_z_euro-sign_", xmlId("\\z€"));
+	    assertEquals("_.", xmlId("."));
+	    assertEquals("a_COLON_b", xmlId("a:b"));
+	    assertEquals("_-", xmlId("-"));
+	    assertEquals("_.", xmlId("."));
+	    assertEquals("_..", xmlId(".."));
+	    assertEquals("_7", xmlId("7"));
+	    assertEquals("_78", xmlId("78"));
+	    assertEquals("a7", xmlId("a7"));
+	    assertEquals("_APOSTROPHE_", xmlId("'"));
+	    assertEquals("_REVERSE-SOLIDUS_z_EURO-SIGN_", xmlId("\\z€"));
 	    
        try {
             assertEquals("", xmlId(null));
@@ -93,4 +108,16 @@ import junit.framework.Assert;
         }
 
 	}
+	
+	@Test
+	public void testMakeSenseId() throws JWNLException{
+	    Dictionary d = Dictionary.getDefaultResourceInstance();
+	    
+	    Word w = d.getSynsetIterator(POS.NOUN).next().getWords().get(0);
+	    if (w.getLemma().equals("car")){
+	        logger.debug("Sense key : " + w.getSenseKey());
+	        logger.debug("lmf id    : " + WNConvUtil.makeSenseId(w));
+	    }
+	}
+	
 }

@@ -171,13 +171,16 @@ public class SynsetGenerator {
 				}
 
 				// MonolingualExternalRef.
-				MonolingualExternalRef monolingualExternalRef = new MonolingualExternalRef();
+				/* div not needed, now there is id in the name
+				  
+				  MonolingualExternalRef monolingualExternalRef = new MonolingualExternalRef();
 				monolingualExternalRef.setExternalSystem(resourceVersion + "_" + EXTERNAL_SYSTEM_SYNSET_OFFSET);
 				monolingualExternalRef.setExternalReference(wnSynset.getPOS() + " " + wnSynset.getOffset());
 //TODO: implications?				monolingualExternalRef.setExternalReference(wnSynset.getOffset() + "-" + wnSynset.getPOS().getKey());
 				List<MonolingualExternalRef> monolingualExternalRefs = new LinkedList<MonolingualExternalRef>();
 				monolingualExternalRefs.add(monolingualExternalRef);
 				lmfSynset.setMonolingualExternalRefs(monolingualExternalRefs);
+				*/
 			}
 		}
 
