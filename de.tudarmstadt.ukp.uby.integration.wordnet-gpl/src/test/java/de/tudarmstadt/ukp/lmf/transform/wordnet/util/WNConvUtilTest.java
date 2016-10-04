@@ -67,7 +67,7 @@ import junit.framework.Assert;
     public void testLexicalEntryId(){
         
         assertEquals("wn_le_n_hello", makeLexicalEntryId("wn", POS.NOUN, "hello"));
-        assertEquals("wn_le_n__APOSTROPHE_hood", makeLexicalEntryId("wn", POS.NOUN, "'hood"));
+        assertEquals("wn_le_n_-hood", makeLexicalEntryId("wn", POS.NOUN, "'hood"));
     }	
 	
 	/**
@@ -83,10 +83,17 @@ import junit.framework.Assert;
 	    assertEquals("_-", xmlId("-"));
 	    assertEquals("_.", xmlId("."));
 	    assertEquals("_..", xmlId(".."));
+	    // spaces
+	    assertEquals("a-b", xmlId("a b"));
+	    assertEquals("a-b", xmlId("a\tb"));
+	    assertEquals("a-b", xmlId("a\nb"));
+	    assertEquals("a", xmlId(" a"));
 	    assertEquals("_7", xmlId("7"));
 	    assertEquals("_78", xmlId("78"));
 	    assertEquals("a7", xmlId("a7"));
-	    assertEquals("_APOSTROPHE_", xmlId("'"));
+	    assertEquals("a-", xmlId("a'"));
+	    assertEquals("_-a", xmlId("'a"));
+	    assertEquals("_-", xmlId("'"));
 	    assertEquals("_REVERSE-SOLIDUS_z_EURO-SIGN_", xmlId("\\z€"));
 	    
        try {

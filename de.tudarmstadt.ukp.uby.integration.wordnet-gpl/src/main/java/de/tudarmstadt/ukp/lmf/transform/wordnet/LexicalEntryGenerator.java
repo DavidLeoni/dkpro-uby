@@ -452,6 +452,8 @@ public class LexicalEntryGenerator {
 	}
 
 	/**
+	 * div new 
+	 * 
 	 * Returns the prefix used in ids, like i.e."WN" 
 	 */
 	public String getPrefix(){

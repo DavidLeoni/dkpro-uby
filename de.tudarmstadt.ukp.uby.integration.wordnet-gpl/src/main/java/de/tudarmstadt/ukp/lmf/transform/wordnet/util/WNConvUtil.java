@@ -39,6 +39,7 @@ import de.tudarmstadt.ukp.lmf.model.core.Lexicon;
 import de.tudarmstadt.ukp.lmf.model.core.Sense;
 import de.tudarmstadt.ukp.lmf.model.core.TextRepresentation;
 import de.tudarmstadt.ukp.lmf.model.enums.EPartOfSpeech;
+import de.tudarmstadt.ukp.lmf.model.meta.MetaData;
 import de.tudarmstadt.ukp.lmf.model.semantics.SemanticArgument;
 import de.tudarmstadt.ukp.lmf.model.semantics.SemanticPredicate;
 import de.tudarmstadt.ukp.lmf.model.semantics.SenseExample;
@@ -74,6 +75,7 @@ public class WNConvUtil {
         NAMESPACES.put(SenseExample.class, "se");
         NAMESPACES.put(Synset.class, "ss");        
         NAMESPACES.put(LexicalEntry.class, "le");
+        NAMESPACES.put(MetaData.class, "md");
         NAMESPACES.put(SynSemCorrespondence.class, "ssc");
         NAMESPACES.put(SubcategorizationFrame.class, "scf");
         NAMESPACES.put(SyntacticArgument.class, "sya");
@@ -132,7 +134,9 @@ public class WNConvUtil {
      * (technically, they need to be NCNames).
      * 
      * In particular, non letters are converted to their unicode equivalent name in capital letters, 
-     *   so for example lemma {@code 'hood} becomes {@code _APOSTROPHE_hood}
+     *   so for example lemma {@code euro} becomes {@code _EURO_}. Common 
+     *   non-letters like apostrophe get converted to "-".
+     * 
      */
     public static String xmlId(String wnId){
         if (wnId == null){
@@ -142,16 +146,20 @@ public class WNConvUtil {
             throw new IllegalArgumentException("Tried to parse a blank wordnet id!");
         }
         
+        String wnIdNoSpaces = wnId.trim()
+                .replaceAll("(?U)\\s", "-")
+                .replaceAll("'", "-");
+        
         String fid;
         
-        String first = wnId.substring(0,1); 
+        String first = wnIdNoSpaces.substring(0,1); 
         
         if ( first.equals(".")
                 || first.equals("-")
                 || Character.isDigit(first.charAt(0))){
-            fid = "_" + wnId;
+            fid = "_" + wnIdNoSpaces;
         } else {
-            fid = wnId;
+            fid = wnIdNoSpaces;
         }
         
         

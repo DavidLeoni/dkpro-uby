@@ -103,7 +103,7 @@ public class WNConverter {
 	@Deprecated
 	public WNConverter(File dictionaryPath, Dictionary wordNet, LexicalResource lexicalResource, String resourceVersion,
 			String dtd, String exMappingPath) {
-		this(WNConvUtil.DEFAULT_PREFIX,dictionaryPath, wordNet, lexicalResource, resourceVersion, dtd);
+		this(WNConvUtil.DEFAULT_PREFIX, dictionaryPath, wordNet, lexicalResource, resourceVersion, dtd);
 		/*try {
 			File exMapping = new File(exMappingPath);
 		} catch (Exception e) {
@@ -121,19 +121,16 @@ public class WNConverter {
 		try {
 			LOG.info("Started converting WordNet to LMF...");
 			SubcategorizationFrameExtractor subcategorizationFrameExtractor = new SubcategorizationFrameExtractor(subcatStream, prefix);
-
-			// Setting attributes of LexicalResource
-			lexicalResource.setName("WordNet");
-			lexicalResource.setDtdVersion(dtd_version);
-
 			
 			// *** Setting GlobalInformation *** //
 			GlobalInformation globalInformation = new GlobalInformation();
 			globalInformation.setLabel("LMF representation of WordNet " + resourceVersion);
 			lexicalResource.setGlobalInformation(globalInformation);
 			
+			
             MetaData metadata = new MetaData();
             
+            metadata.setId(WNConvUtil.makeId(prefix, MetaData.class, "lr"));
             metadata.setAutomatic(true);
             metadata.setCreationDate(new Date());
             metadata.setCreationProcess("automatic");
