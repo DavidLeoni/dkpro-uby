@@ -1,6 +1,6 @@
 /**
- * Copyright 2015
  * Ubiquitous Knowledge Processing (UKP) Lab
+ * Copyright 2015
  * Technische Universität Darmstadt
  *
  * This program is free software: you can redistribute it and/or modify
@@ -229,10 +229,14 @@ public class WNConvUtil {
      * <p>
      * 
      * For lemma sanitization, see {@link #xmlId(String)}
+     * 
+     * @param i if < 1 does nothing, otherwise number 'i' is appended to lemma
+     * 
      * @return sense key
      * @throws JWNLException JWNLException
      */
-    public static String makeSenseId(String prefix, Word lexeme) {
+    public static String makeSenseId(String prefix, Word lexeme, int i) {
+        
         int ss_type = lexeme.getPOS().getId();
         if (POS.ADJECTIVE == lexeme.getSynset().getPOS() && lexeme.getSynset().isAdjectiveCluster()) {
             ss_type = POS.ADJECTIVE_SATELLITE_ID;
@@ -240,10 +244,13 @@ public class WNConvUtil {
 
         String dot = ".";
                 
+        
         // a bit convoluted but should make sense
         StringBuilder senseKey = 
                 new StringBuilder(prefix + "_" 
-                            + xmlId(NAMESPACES.get(Sense.class) + "_" + lexeme.getLemma()));
+                            + xmlId(NAMESPACES.get(Sense.class) 
+                                    + "_" + lexeme.getLemma()
+                                    + (i < 1 ? "" : "-" + i)));
         senseKey.append("_").append(ss_type).append(dot);
         if (lexeme.getSynset().getLexFileNum() < 10) {
             senseKey.append("0");

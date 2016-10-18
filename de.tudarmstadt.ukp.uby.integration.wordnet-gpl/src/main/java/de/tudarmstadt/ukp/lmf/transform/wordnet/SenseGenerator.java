@@ -142,11 +142,11 @@ public class SenseGenerator {
                 throw new RuntimeException(e);
             }
 			
-			String newId = WNConvUtil.makeSenseId(synsetGenerator.getPrefix(),lexeme);
+			String newId = WNConvUtil.makeSenseId(synsetGenerator.getPrefix(),lexeme, -1);
 			
 		    int i = 1;
 		    while (usedIds.contains(newId)){
-                newId = WNConvUtil.xmlId(lexeme.getPOS().getKey()+"_"+i+"_"+ senseKey);
+                newId = WNConvUtil.makeSenseId(synsetGenerator.getPrefix(),lexeme, i);
                 i++;
             }    
 		    usedIds.add(newId);
