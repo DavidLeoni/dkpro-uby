@@ -22,6 +22,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -50,6 +54,9 @@ import de.tudarmstadt.ukp.lmf.model.semantics.SynsetRelation;
  */
 public class SynsetRelationGenerator {
 
+    /** div new */
+    private final Log LOG = LogFactory.getLog(getClass());
+    
 	private final SynsetGenerator synsetGenerator;
 	private final LexicalEntryGenerator lexicalEntryGenerator;
 
@@ -131,9 +138,17 @@ public class SynsetRelationGenerator {
 
 		// Iterate over all pointers of the WNSynset and generate the corresponding SynsetRelation
 		for(Pointer pointer : pointers) {
+		    SynsetRelation rel = null;
             if(!ignoredPointerKeys.contains(pointer.getType().getKey())) {
-                synsetRelations.add(generateSynsetRelation(pointer, posOrdinal));
-            }
+                rel = generateSynsetRelation(pointer, posOrdinal);
+            } 
+            if (rel == null){
+                // div workaround, see https://github.com/DavidLeoni/dkpro-uby/issues/3 
+                LOG.info("Skipping adding relation to synset " + synset.toString() + " because of non-synset pointer " + pointer + " , see https://github.com/DavidLeoni/dkpro-uby/issues/3");    
+            } else {
+                synsetRelations.add(rel);                    
+            }                
+
         }
 		binding.getValue().setSynsetRelations(synsetRelations);
 	}
@@ -142,11 +157,12 @@ public class SynsetRelationGenerator {
 	 * This method consumes a pointer of a WordNet's synset and generates the corresponding {@link SynsetRelation}-instance
 	 * @param pointer a {@link Pointer}-instance
 	 * @param posOrdinal the ordinal of the pointer's source part of speech
-	 * @return synset-relation that corresponds to the consumed pointer
+	 * @return synset-relation that corresponds to the consumed pointer, or null if there is no supported target
 	 * @see Synset
 	 * @see net.sf.extjwnl.data.Synset
 	 * @see POS
-	 */
+	 * 
+	 */	
 	private SynsetRelation generateSynsetRelation(Pointer pointer, int posOrdinal){
 
 		// Create a SynsetRelation for the pointer
@@ -207,9 +223,12 @@ public class SynsetRelationGenerator {
 					sense.setSemanticLabels(semanticLabels);
 				}
 			}
+			return synsetRelation;
+		} else {
+		    return null;
 		}
 
-		return synsetRelation;
+		
 	}
 
 	/**
@@ -431,11 +450,12 @@ public class SynsetRelationGenerator {
 
 		// Set the ignored keys
 		ignoredPointerKeys = new TreeSet<String>();
-		ignoredPointerKeys.add("!");
-		ignoredPointerKeys.add("+");
-		ignoredPointerKeys.add("<");
-		ignoredPointerKeys.add("\\");
-
+		ignoredPointerKeys.add("!");  // antonym
+		ignoredPointerKeys.add("+");  // Derivationally related form 
+		ignoredPointerKeys.add("<");  // Participle of verb
+		ignoredPointerKeys.add("\\"); // Pertainym (pertains to noun)
+		
+		// div todo need to better understand, ignored keys and domains, see https://github.com/DavidLeoni/dkpro-uby/issues/3
 
 		// Setting mappings related to domainOf Relations
 		domainOfRegisterMappings.put(";c", ELabelTypeSemantics.domain);
