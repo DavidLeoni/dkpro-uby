@@ -1,6 +1,6 @@
 /**
- * Ubiquitous Knowledge Processing (UKP) Lab
  * Copyright 2015
+ * Ubiquitous Knowledge Processing (UKP) Lab
  * Technische Universität Darmstadt
  *
  * This program is free software: you can redistribute it and/or modify
