@@ -123,7 +123,8 @@ import junit.framework.Assert;
 	    Word w = d.getSynsetIterator(POS.NOUN).next().getWords().get(0);
 	    
 	    logger.debug("Sense key : " + w.getSenseKey());
-	    logger.debug("lmf id    : " + WNConvUtil.makeSenseId("wn30",w));
+	    logger.debug("lmf id    : " + WNConvUtil.makeSenseId("wn30",w, -3));
+	    logger.debug("lmf id    : " + WNConvUtil.makeSenseId("wn30",w, 2));
 	    
 	}
 	
