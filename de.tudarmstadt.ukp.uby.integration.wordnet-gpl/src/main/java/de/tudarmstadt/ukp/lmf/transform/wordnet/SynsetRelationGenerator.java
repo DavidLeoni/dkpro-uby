@@ -144,7 +144,7 @@ public class SynsetRelationGenerator {
             } 
             if (rel == null){
                 // div workaround, see https://github.com/DavidLeoni/dkpro-uby/issues/3 
-                LOG.info("Skipping adding relation to synset " + synset.toString() + " because of non-synset pointer " + pointer + " , see https://github.com/DavidLeoni/dkpro-uby/issues/3");    
+                LOG.info("Skipping adding relation to synset " + synset.getPOS() + "-" + synset.getOffset() + " because of non-synset pointer type " + pointer.getType() + " , see https://github.com/DavidLeoni/dkpro-uby/issues/3");    
             } else {
                 synsetRelations.add(rel);                    
             }                
