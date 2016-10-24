@@ -337,12 +337,13 @@ public class LexicalEntryGenerator {
         
         if (exceptions != null){
             for (String exc : exceptions){
+                List<FormRepresentation> wordFormRepresentations = new LinkedList<FormRepresentation>();
                 WordForm wordForm = new WordForm();
                 FormRepresentation wfr = new FormRepresentation();
                 wfr.setLanguageIdentifier(ELanguageIdentifier.ENGLISH);
                 wfr.setWrittenForm(exc);
-                formRepresentations.add(wfr);            
-                wordForm.setFormRepresentations(formRepresentations);
+                wordFormRepresentations.add(wfr);            
+                wordForm.setFormRepresentations(wordFormRepresentations);
                 wordForms.add(wordForm);
             }
         }
