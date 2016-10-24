@@ -333,14 +333,18 @@ public class LexicalEntryGenerator {
         lexicalEntry.setLemma(lemma);
               
         List<WordForm> wordForms = new ArrayList<>();
-        for (String exc : exceptionMap.get(pos).get(lemmaString)){
-            WordForm wordForm = new WordForm();
-            FormRepresentation wfr = new FormRepresentation();
-            wfr.setLanguageIdentifier(ELanguageIdentifier.ENGLISH);
-            wfr.setWrittenForm(exc);
-            formRepresentations.add(wfr);            
-            wordForm.setFormRepresentations(formRepresentations);
-            wordForms.add(wordForm);
+        List<String> exceptions = exceptionMap.get(pos).get(lemmaString);
+        
+        if (exceptions != null){
+            for (String exc : exceptions){
+                WordForm wordForm = new WordForm();
+                FormRepresentation wfr = new FormRepresentation();
+                wfr.setLanguageIdentifier(ELanguageIdentifier.ENGLISH);
+                wfr.setWrittenForm(exc);
+                formRepresentations.add(wfr);            
+                wordForm.setFormRepresentations(formRepresentations);
+                wordForms.add(wordForm);
+            }
         }
         
         lexicalEntry.setWordForms(wordForms);
