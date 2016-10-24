@@ -19,6 +19,13 @@
 package de.tudarmstadt.ukp.lmf.transform.wordnet.util;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -27,6 +34,7 @@ import static de.tudarmstadt.ukp.lmf.transform.wordnet.util.WNConvUtil.xmlId;
 import static de.tudarmstadt.ukp.lmf.transform.wordnet.util.WNConvUtil.makeLexicalEntryId;
 
 import net.sf.extjwnl.JWNLException;
+import net.sf.extjwnl.data.Exc;
 import net.sf.extjwnl.data.POS;
 import net.sf.extjwnl.data.Word;
 import net.sf.extjwnl.dictionary.Dictionary;
@@ -127,5 +135,74 @@ import junit.framework.Assert;
 	    logger.debug("lmf id    : " + WNConvUtil.makeSenseId("wn30",w, 2));
 	    
 	}
+	
+	
+	/**
+     * div new
+     */
+	// chlamydes chlamys
+	// chlamyses chlamys
+	// Chlamys: http://wordnetweb.princeton.edu/perl/webwn?s=chlamys&sub=Search+WordNet&o2=1&o0=1&o8=1&o1=1&o7=1&o5=1&o9=&o6=1&o3=1&o4=1&h=00
+	
+	// https://commons.wikimedia.org/wiki/Category:Chlamydes
+    @Test
+    public void testExceptions() throws JWNLException{
+        
+        Dictionary d = Dictionary.getDefaultResourceInstance();
+        Map<POS, HashMap<String, List<String>>> m = WNConvUtil.buildExceptionMap(d);
+        
+        List<String> weirdForms = m.get(POS.NOUN).get("mouse");
+        assertEquals(1, weirdForms.size());
+        
+        assertEquals("mice", weirdForms.get(0));
+        
+    }
+    
+	/**
+	 * div new
+	 */
+	@Test
+	public void testExtJwnlExceptions() throws JWNLException{
+	    Dictionary d = Dictionary.getDefaultResourceInstance();
+        
+	    
+	    String mouse = "mouse";
+        ArrayList<String> vmouse = new ArrayList<>();
+	    vmouse.add(mouse);
+
+        String mice = "mice";
+        ArrayList<String> vmice = new ArrayList<>();
+        vmice.add(mice);
+        
+	    
+	    assertEquals(vmouse, d.getMorphologicalProcessor().lookupAllBaseForms(POS.NOUN, mouse));	    	    
+	    assertEquals(vmouse, d.getMorphologicalProcessor().lookupAllBaseForms(POS.NOUN, mice));
+	    	    
+	    assertEquals(vmouse, d.getMorphologicalProcessor().lookupAllBaseForms(POS.VERB, "mousing"));
+	    
+	    Iterator<Exc> it = d.getExceptionIterator(POS.NOUN);
+	    boolean foundMice = false;	   
+	    
+        while(it.hasNext()){
+            Exc exc = it.next();
+                       
+            // the 'lemma' is actually the exception!
+            if ("mice".equals(exc.getLemma())){
+                foundMice = true;
+                assertEquals("mouse", exc.getExceptions().get(0));                
+            }            
+        }
+        
+        assertTrue(foundMice);
+        	    
+        assertEquals(null, d.getException(POS.NOUN, mouse));               
+        
+        Exc mexc = d.getException(POS.NOUN, mice);
+        
+        assertEquals(mice, mexc.getLemma());
+        assertEquals(mouse, mexc.getExceptions().get(0));               
+        
+	}
+	
 	
 }

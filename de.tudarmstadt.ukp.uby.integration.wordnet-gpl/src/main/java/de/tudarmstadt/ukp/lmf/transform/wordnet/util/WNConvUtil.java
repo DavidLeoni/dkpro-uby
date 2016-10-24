@@ -19,10 +19,14 @@
 package de.tudarmstadt.ukp.lmf.transform.wordnet.util;
 
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -30,10 +34,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import net.sf.extjwnl.JWNLException;
+import net.sf.extjwnl.data.Exc;
 import net.sf.extjwnl.data.POS;
 import net.sf.extjwnl.data.Pointer;
 import net.sf.extjwnl.data.PointerType;
 import net.sf.extjwnl.data.Word;
+import net.sf.extjwnl.dictionary.Dictionary;
 import de.tudarmstadt.ukp.lmf.model.core.LexicalEntry;
 import de.tudarmstadt.ukp.lmf.model.core.Lexicon;
 import de.tudarmstadt.ukp.lmf.model.core.Sense;
@@ -287,5 +293,70 @@ public class WNConvUtil {
         return senseKey.toString();
     }
     
+    
+    /**
+     * Wordnet has dictionary like this:  mice -> mouse , baseform, ...
+     * 
+     * We want an inverted dictionary:  mouse -> mice, ...
+     * 
+     * div new
+     */
+    public static Map<POS, HashMap<String, List<String>>> buildExceptionMap(Dictionary dictionary) {
+
+        Map<POS, HashMap<String, List<String>>> ret = new HashMap<>();
+        
+        HashSet<String> baseformsWithMultipleExceptions = new HashSet<>();
+        
+        
+        ret.put(POS.NOUN, new HashMap());
+        ret.put(POS.ADJECTIVE, new HashMap());
+        ret.put(POS.ADVERB, new HashMap());
+        ret.put(POS.VERB, new HashMap());
+        
+        try {
+            for (POS pos : POS.getAllPOS()) {
+                Iterator<Exc> it = dictionary.getExceptionIterator(pos);
+                while (it.hasNext()) {
+                    Exc exc = it.next();
+
+                    String weirdForm = exc.getLemma();
+
+                    for (String baseForm : exc.getExceptions()) {
+                        List<String> weirdForms = ret.get(pos)
+                                                              .get(baseForm);
+                        if (weirdForms == null) {
+                            weirdForms = new ArrayList<>();
+                        } else {                            
+                           baseformsWithMultipleExceptions.add(pos.getKey() + " " + baseForm);                                                                                                                 
+                        }
+
+                        if (!weirdForms.contains(weirdForm)){
+                            weirdForms.add(weirdForm);    
+                        }
+                        
+                        ret.get(pos).put(baseForm, weirdForms);
+
+                    }
+                }
+            }
+            
+            
+            if (!baseformsWithMultipleExceptions.isEmpty()){                
+                
+                for (String pbf : baseformsWithMultipleExceptions){
+                    POS bfPos = POS.getPOSForKey(pbf.substring(0,1));
+                    String bf = pbf.substring(2);
+                    logger.debug("  " + pbf + " : " + ret.get(bfPos).get(bf));                    
+                }
+                
+                logger.debug("\nFound " + baseformsWithMultipleExceptions.size() + " baseforms which have multiple exceptions (see above log)");
+                
+            }
+            
+            return ret;
+        } catch (JWNLException e) {
+            throw new RuntimeException(e);
+        }
+    }    
     
 }

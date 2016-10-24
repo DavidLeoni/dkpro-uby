@@ -26,7 +26,7 @@
 		<version>0.7.0</version>
 	</parent>
 	<artifactId>de.tudarmstadt.ukp.uby.integration.wordnet-gpl</artifactId>
-	<version>0.7.0-div</version>
+	<version>0.7.0-div-SNAPSHOT</version>
 	<name>Integration: WordNet</name>
 	<licenses>
 		<license>
@@ -47,7 +47,19 @@
 			<groupId>net.sf.extjwnl</groupId>
 			<artifactId>extjwnl</artifactId>
 			<version>1.9.1</version>
+			<exclusions>
+				<exclusion>
+					 <groupId>org.slf4j</groupId>
+					 <artifactId>slf4j-log4j12</artifactId>
+				</exclusion>				 
+			</exclusions>
 		</dependency>	
+		<dependency>
+		    <groupId>org.slf4j</groupId>
+		    <artifactId>slf4j-simple</artifactId>		    
+		</dependency>
+
+		
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
