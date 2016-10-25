@@ -35,6 +35,7 @@ import org.apache.commons.logging.LogFactory;
 
 import net.sf.extjwnl.JWNLException;
 import net.sf.extjwnl.data.Exc;
+import net.sf.extjwnl.data.IndexWord;
 import net.sf.extjwnl.data.POS;
 import net.sf.extjwnl.data.Pointer;
 import net.sf.extjwnl.data.PointerType;
@@ -295,7 +296,7 @@ public class WNConvUtil {
     
     
     /**
-     * Wordnet has dictionary like this:  mice -> mouse , baseform, ...
+     * Wordnet has dictionary like this:  mice -> mouse , some-other-baseform, ...
      * 
      * We want an inverted dictionary:  mouse -> mice, ...
      * 
@@ -314,30 +315,56 @@ public class WNConvUtil {
         ret.put(POS.VERB, new HashMap());
         
         try {
+            List<String> skipped = new ArrayList<>();            
+            
             for (POS pos : POS.getAllPOS()) {
                 Iterator<Exc> it = dictionary.getExceptionIterator(pos);
                 while (it.hasNext()) {
                     Exc exc = it.next();
 
+                    // Note: the 'lemma' here is actually the exception ...
                     String weirdForm = exc.getLemma();
 
+                    // ... and the exceptions are actually the baseForm O_o
                     for (String baseForm : exc.getExceptions()) {
-                        List<String> weirdForms = ret.get(pos)
-                                                              .get(baseForm);
-                        if (weirdForms == null) {
-                            weirdForms = new ArrayList<>();
-                        } else {                            
-                           baseformsWithMultipleExceptions.add(pos.getKey() + " " + baseForm);                                                                                                                 
-                        }
+                        
+                        // because exceptions sometimes have dash "-" like "goose-step"
+                        // and sometimes have space like "join battle"
+                        
+                        IndexWord normalizedBaseFormWord = dictionary.lookupIndexWord(pos, baseForm);
+                                      
 
-                        if (!weirdForms.contains(weirdForm)){
-                            weirdForms.add(weirdForm);    
+                        if (normalizedBaseFormWord == null){
+                            logger.debug("Couldn't look up index word for baseForm " + pos.getKey() + " " +  baseForm + "  , skipping it!");
+                            skipped.add(pos.getKey() + " " + baseForm);
+                        } else {
+                            String normalizedBaseForm = normalizedBaseFormWord.getLemma();
+                            List<String> weirdForms = ret.get(pos)
+                                    .get(normalizedBaseForm);
+                            if (weirdForms == null) {
+                              weirdForms = new ArrayList<>();
+                            } else {                            
+                             baseformsWithMultipleExceptions.add(pos.getKey() + " " + normalizedBaseForm);                                                                                                                 
+                            }
+                            
+                            if (!weirdForms.contains(weirdForm)){
+                              weirdForms.add(weirdForm);    
+                            }
+
+                            ret.get(pos).put(normalizedBaseForm, weirdForms);
+                            
                         }
                         
-                        ret.get(pos).put(baseForm, weirdForms);
+                        
+                        
 
                     }
                 }
+                                
+            }
+            if (skipped.size() > 0){
+                logger.info("Skipped " + skipped.size() + " WordForm exceptions because their baseform was not defined in Wordnet. This is a Wordnet issue, for details see https://github.com/DavidLeoni/dkpro-uby/issues/4 ");
+                logger.debug("Complete list is :  \n" + skipped.toString());
             }
             
             
