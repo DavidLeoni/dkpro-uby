@@ -19,6 +19,7 @@
 package de.tudarmstadt.ukp.lmf.transform.wordnet.util;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
@@ -35,6 +36,7 @@ import static de.tudarmstadt.ukp.lmf.transform.wordnet.util.WNConvUtil.makeLexic
 
 import net.sf.extjwnl.JWNLException;
 import net.sf.extjwnl.data.Exc;
+import net.sf.extjwnl.data.IndexWord;
 import net.sf.extjwnl.data.POS;
 import net.sf.extjwnl.data.Word;
 import net.sf.extjwnl.dictionary.Dictionary;
@@ -154,7 +156,17 @@ import junit.framework.Assert;
         List<String> weirdForms = m.get(POS.NOUN).get("mouse");
         assertEquals(1, weirdForms.size());
         
-        assertEquals("mice", weirdForms.get(0));
+        assertEquals("mice", weirdForms.get(0));        
+        
+       // with a space like the writtenForm !
+        List<String> weirdForms2 = m.get(POS.VERB).get("goose step");
+        assertNotNull(weirdForms2);
+        assertEquals(2, weirdForms2.size());
+        
+        assertEquals("goose-stepped", weirdForms2.get(0));
+        
+        
+        
         
     }
     
@@ -174,7 +186,25 @@ import junit.framework.Assert;
         ArrayList<String> vmice = new ArrayList<>();
         vmice.add(mice);
         
+        
+        IndexWord w1 = d.lookupIndexWord(POS.VERB,"goose-step");
+        IndexWord w2 = d.lookupIndexWord(POS.VERB,"goose step");
+        IndexWord w3 = d.lookupIndexWord(POS.VERB, "join battle");
+        IndexWord w4 = d.lookupIndexWord(POS.NOUN,"'s Gravenhage");
+        IndexWord w5 = d.lookupIndexWord(POS.NOUN,"s-Gravenhage");
+        IndexWord w6 = d.lookupIndexWord(POS.NOUN,"high-hat");
+        IndexWord w7 = d.lookupIndexWord(POS.NOUN,"high hat");
+        
 	    
+        // NOTE: key is _the same_ as lemma
+        logger.info("   lemma: " + w1.getLemma());
+        logger.info("   lemma: " + w2.getLemma());
+        logger.info("   lemma: " + w3.getLemma());
+        logger.info("   lemma: " + w4.getLemma());
+        logger.info("   lemma: " + w5.getLemma());
+        logger.info("   lemma: " + w6.getLemma());
+        logger.info("   lemma: " + w7.getLemma());
+        
 	    assertEquals(vmouse, d.getMorphologicalProcessor().lookupAllBaseForms(POS.NOUN, mouse));	    	    
 	    assertEquals(vmouse, d.getMorphologicalProcessor().lookupAllBaseForms(POS.NOUN, mice));
 	    	    
