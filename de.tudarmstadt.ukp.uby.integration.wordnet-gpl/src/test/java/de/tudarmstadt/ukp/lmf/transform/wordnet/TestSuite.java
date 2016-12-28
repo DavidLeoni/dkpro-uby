@@ -62,9 +62,8 @@ public class TestSuite {
 	 */
 	@BeforeClass
 	public static void setUpClass() throws FileNotFoundException, JWNLException {
-
-		String extJWNL_configuration = UBY_HOME+"/WordNet/extJWNL/file_properties.xml";
-		wordNet = Dictionary.getInstance(new FileInputStream(extJWNL_configuration));
+		
+		wordNet = Dictionary.getDefaultResourceInstance();
 
 	}
 

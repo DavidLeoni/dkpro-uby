@@ -188,9 +188,19 @@ public class SynsetRelationGenerator {
             throw new RuntimeException(e);
         }
 		if(pointerTarget instanceof net.sf.extjwnl.data.Synset){
-			// the target is a Synset
-			synsetRelation.setTarget(synsetGenerator.getLMFSynset((net.sf.extjwnl.data.Synset)pointerTarget));
 
+			
+			net.sf.extjwnl.data.Synset targetExtSynset;
+            try {
+                targetExtSynset = (net.sf.extjwnl.data.Synset) pointer.getTarget();
+            } catch (JWNLException e) {                
+                throw new RuntimeException(e);
+            }
+            
+            // the target is a Synset
+            synsetRelation.setTarget(synsetGenerator.getLMFSynset(targetExtSynset));
+            
+            
 			/*
 			 * Updating SubjectField-class
 			 * this block will only be executed for DOMAIN-OF pointers
@@ -199,12 +209,7 @@ public class SynsetRelationGenerator {
 				// SenseGenerator is needed in order to obtain the Lexeme's corresponding Sense
 				SenseGenerator senseGenerator = lexicalEntryGenerator.getSenseGenerator();
 
-				net.sf.extjwnl.data.Synset targetSynset;
-                try {
-                    targetSynset = (net.sf.extjwnl.data.Synset) pointer.getTarget();
-                } catch (JWNLException e) {                
-                    throw new RuntimeException(e);
-                }
+				
 
 				// iterate over every lexeme of the source synset
 				for(Word lexeme : ((net.sf.extjwnl.data.Synset)pointer.getSource()).getWords()){
@@ -217,7 +222,7 @@ public class SynsetRelationGenerator {
                     }
 
 					// create a new SemanticLabel and add it to the list
-					SemanticLabel semanticLabel = createSemanticLabel(targetSynset, pointerSymbol);
+					SemanticLabel semanticLabel = createSemanticLabel(targetExtSynset, pointerSymbol);
 					semanticLabels.add(semanticLabel);
 					// set the subjectField
 					sense.setSemanticLabels(semanticLabels);
