@@ -47,6 +47,7 @@ import de.tudarmstadt.ukp.lmf.model.core.Sense;
 import de.tudarmstadt.ukp.lmf.model.core.TextRepresentation;
 import de.tudarmstadt.ukp.lmf.model.enums.EPartOfSpeech;
 import de.tudarmstadt.ukp.lmf.model.meta.MetaData;
+import de.tudarmstadt.ukp.lmf.model.multilingual.SenseAxis;
 import de.tudarmstadt.ukp.lmf.model.semantics.SemanticArgument;
 import de.tudarmstadt.ukp.lmf.model.semantics.SemanticPredicate;
 import de.tudarmstadt.ukp.lmf.model.semantics.SenseExample;
@@ -89,6 +90,7 @@ public class WNConvUtil {
         NAMESPACES.put(SemanticArgument.class, "sea");
         NAMESPACES.put(SyntacticBehaviour.class, "sb");
         NAMESPACES.put(SemanticPredicate.class, "sp");
+        NAMESPACES.put(SenseAxis.class, "sa");
     }
     
     

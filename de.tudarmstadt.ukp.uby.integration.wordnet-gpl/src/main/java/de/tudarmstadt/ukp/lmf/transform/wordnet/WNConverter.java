@@ -143,7 +143,7 @@ public class WNConverter {
 			//*** Setting Lexicon (only one since WordNet is monolingual)***//
 			Lexicon lexicon = new Lexicon();
 			lexicon.setLanguageIdentifier(ELanguageIdentifier.ENGLISH);
-			lexicon.setId(WNConvUtil.makeId(prefix, Lexicon.class,"en"));
+			lexicon.setId(WNConvUtil.makeId(prefix, Lexicon.class,"eng"));
 			
 			lexicon.setName("WordNet");
 			LinkedList<Lexicon> lexicons = new LinkedList<Lexicon>();
